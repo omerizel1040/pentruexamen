@@ -1,0 +1,99 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<cstring>
+#include<vector>
+using namespace std;
+
+
+enum Gen { COMEDIE=3, DRAMA=4, ACTIUNE=5, SF=6, HORROR=7 };
+
+class Film {
+private:
+	const int id;
+    string titlu;                // titlul filmului
+    Gen gen;                     // genul filmului
+    int locuriDisponibile;       // numarul de locuri disponibile
+    float pretBilet;             // pretul unui bilet
+    static int contorID;
+public:
+    Film() :id(++contorID) {
+        this->titlu = "DEFAULT";
+        this->gen = COMEDIE;
+        this->locuriDisponibile = 0;
+        this->pretBilet = 0;
+    }
+
+    Film(string t, Gen _gen, int l, float p) : id(++contorID) {
+        this->titlu = t;
+        this->gen = _gen;
+        this->locuriDisponibile = l;
+        this->pretBilet = p;
+    }
+
+    Film(string _ti) :id(++contorID) {
+        this->titlu = _ti;
+        this->gen = COMEDIE;
+        this->locuriDisponibile = 0;
+        this->pretBilet = 0;
+    }
+    //OPERATOR+ suma veni pt 2 filme
+    int operator+(const Film& f) const {
+        int venit = 0;
+
+        venit += this->locuriDisponibile * this->pretBilet;
+        venit += f.locuriDisponibile * f.pretBilet;
+
+        return venit;
+    }
+    explicit operator int() const {
+        return locuriDisponibile;
+    }
+
+
+    friend ostream& operator<<(ostream& out, Film& f);
+};
+
+ostream& operator<<(ostream& out, Film& f) {
+    out << "\nId ul este: " << f.id;
+    out << "\nTitlul este: " << f.titlu;
+    out << "\nGen: " << f.gen;
+    out << "\nLocuri disponibile: " << f.locuriDisponibile;
+    out << "\nPret bilet: " << f.pretBilet;
+    return out;
+}
+
+class Cinematograf {
+private:
+    string denumire;
+    vector<Film> filme;
+public:
+    Cinematograf(string d) {
+        this->denumire = d;
+    }
+};
+
+
+
+int Film::contorID = 0;
+
+int main() {
+    Film f0;
+    cout << f0;
+    cout << endl;
+    Film f1("TITANIC",COMEDIE, 100.8, 45.5);
+    cout << f1;
+    cout << endl;
+    cout << endl;
+    Film f3("TITANIC", COMEDIE, 20, 10);
+    cout << f3;
+    cout << endl;
+    cout << endl;
+    Film f2("NARNIA");
+    cout << f2;
+    cout << endl;
+    int total = f1 + f3;
+    cout << "\nVenitul total este: " << total << endl;
+    cout << endl;
+    int x = int(f1);
+    cout << "\nLouri disp: " << x << endl;
+}
