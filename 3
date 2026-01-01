@@ -1,0 +1,163 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+
+using namespace std;
+
+///////////////////////////
+// CLASA ABSTRACTA
+///////////////////////////
+class Serviciu {
+protected:
+    string denumire;
+public:
+    Serviciu(string den) {
+        this->denumire = den;
+    }
+
+    virtual float calculeazaPret() const = 0;
+
+    string getDenumire() const {
+        return denumire;
+    }
+
+    virtual ~Serviciu() {}
+};
+
+///////////////////////////
+// CLASE DERIVATE
+///////////////////////////
+class Tuns : public Serviciu {
+    float pret;
+public:
+    Tuns(float pret) : Serviciu("Tuns") {
+        this->pret = pret;
+    }
+
+    float calculeazaPret() const {
+        return pret;
+    }
+};
+
+class Frezat : public Serviciu {
+    float pret;
+public:
+    Frezat(float pret) : Serviciu("Frezat") {
+        this->pret = pret;
+    }
+
+    float calculeazaPret() const {
+        return pret;
+    }
+};
+
+class Barbierit : public Serviciu {
+    float pret;
+public:
+    Barbierit(float pret) : Serviciu("Barbierit") {
+        this->pret = pret;
+    }
+
+    float calculeazaPret() const {
+        return pret;
+    }
+};
+
+///////////////////////////
+// CLASA FRIZERIE
+///////////////////////////
+class Frizerie {
+private:
+    string denumire;
+    string adresa;
+    static int nrFrizerii;
+
+    vector<Serviciu*> servicii;
+    map<string, float> preturiServicii;
+
+public:
+    Frizerie(string den, string adr) {
+        this->denumire = den;
+        this->adresa = adr;
+        nrFrizerii++;
+    }
+
+    // ADAUGARE SERVICIU
+    Frizerie& operator+=(Serviciu* s) {
+        servicii.push_back(s);
+        preturiServicii[s->getDenumire()] = s->calculeazaPret();
+        return *this;
+    }
+
+    // STERGERE SERVICIU DUPA DENUMIRE
+    Frizerie& operator-=(string den) {
+        for (int i = 0; i < servicii.size(); i++) {
+            if (servicii[i]->getDenumire() == den) {
+                delete servicii[i];
+                servicii.erase(servicii.begin() + i);
+                preturiServicii.erase(den);
+                break;
+            }
+        }
+        return *this;
+    }
+
+    // PRET TOTAL
+    float calculeazaTotal() const {
+        float total = 0;
+        for (int i = 0; i < servicii.size(); i++) {
+            total += servicii[i]->calculeazaPret();
+        }
+        return total;
+    }
+
+    // CAUTARE RAPIDA PRET
+    float getPretServiciu(string den) {
+        return preturiServicii[den];
+    }
+
+    friend ostream& operator<<(ostream& out, Frizerie& f) {
+        out << "\nFrizerie: " << f.denumire;
+        out << "\nAdresa: " << f.adresa;
+        out << "\nServicii:";
+        for (int i = 0; i < f.servicii.size(); i++) {
+            out << "\n - " << f.servicii[i]->getDenumire()
+                << " : " << f.servicii[i]->calculeazaPret();
+        }
+        return out;
+    }
+
+    ~Frizerie() {
+        for (int i = 0; i < servicii.size(); i++) {
+            delete servicii[i];
+        }
+    }
+};
+
+int Frizerie::nrFrizerii = 0;
+
+///////////////////////////
+// MAIN
+///////////////////////////
+int main() {
+
+    Frizerie f("Barber Shop", "Str. Mare nr. 10");
+
+    f += new Tuns(50);
+    f += new Frezat(30);
+    f += new Barbierit(40);
+
+    cout << f;
+
+    cout << "\n\nPret total: " << f.calculeazaTotal();
+
+    cout << "\nPret Tuns: " << f.getPretServiciu("Tuns");
+
+    f -= "Frezat";
+
+    cout << "\n\nDupa eliminare Frezat:";
+    cout << f;
+
+    return 0;
+}
