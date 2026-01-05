@@ -1,0 +1,102 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+class TraseuTuristic {
+private:
+    char* denumire;           // alocat dinamic
+    int distanta;             // km
+    float durata;             // ore
+    static const int MAX_PUNCTE = 100; // membru const
+
+public:
+    // Constructor cu parametri
+    TraseuTuristic(const char* d = "Necunoscut", int dist = 0, float dur = 0.0f) {
+        denumire = new char[strlen(d) + 1];
+        strcpy(denumire, d);
+        setDistanta(dist);
+        durata = dur;
+    }
+
+    // Destructor
+    ~TraseuTuristic() {
+        delete[] denumire;
+    }
+
+    // Get/Set pentru distanta cu validare
+    int getDistanta() const { return distanta; }
+
+    void setDistanta(int dist) {
+        if (dist >= 0) distanta = dist;
+        else {
+            cout << "Distanta invalida! Se seteaza la 0.\n";
+            distanta = 0;
+        }
+    }
+
+    // Operator - pentru a scadea distanta
+    void operator-(int reducere) {
+        setDistanta(distanta - reducere);
+    }
+
+    // Operator == pentru comparare
+    bool operator==(const TraseuTuristic& t) const {
+        return (strcmp(denumire, t.denumire) == 0) &&
+            (distanta == t.distanta) &&
+            (durata == t.durata);
+    }
+
+    // Metoda virtuala pentru late-binding
+    virtual void afisare() const {
+        cout << "Traseu: " << denumire
+            << ", Distanta: " << distanta
+            << " km, Durata: " << durata << " ore\n";
+    }
+};
+
+class TraseuMontan : public TraseuTuristic {
+private:
+    int nivelDificultate; // 1-5
+
+public:
+    TraseuMontan(const char* d, int dist, float dur, int nivel)
+        : TraseuTuristic(d, dist, dur) // apel explicit constructor clasa baza
+    {
+        nivelDificultate = (nivel >= 1 && nivel <= 5) ? nivel : 1;
+    }
+
+    void afisare() const override { // late binding
+        TraseuTuristic::afisare();
+        cout << "Nivel dificultate: " << nivelDificultate << "/5\n";
+    }
+};
+template<typename T>
+void schimbaValori(T& a, T& b) {
+    T temp = a;
+    a = b;
+    b = temp;
+}
+
+
+int main() {
+    TraseuTuristic t1("Transfagarasan", 150, 5.5f);
+    TraseuTuristic t2("Drumul Regelui", 100, 4.0f);
+
+    // operator -
+    t1 - 20; // scade distanta cu 20 km
+    t1.afisare();
+    cout << endl;
+
+    // Relație is-a și late-binding
+    TraseuMontan tm("Fagaras", 120, 6.0f, 4);
+    TraseuTuristic* p = &tm;
+    p->afisare(); // late-binding: apelează afisare() din TraseuMontan
+
+    cout << endl;
+    // Funcție template
+    int x = 5, y = 10;
+    cout << "Inainte: x=" << x << ", y=" << y << endl;
+    schimbaValori(x, y);
+    cout << "Dupa: x=" << x << ", y=" << y << endl;
+}
