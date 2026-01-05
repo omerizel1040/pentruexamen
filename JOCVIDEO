@@ -1,0 +1,137 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<vector>
+#include<cstring>
+using namespace std;
+
+
+enum TipCaracter {
+	ZBURATOR, RAZBOINIC, MAG
+};
+class Caracter {
+private:
+	string denumire;
+	TipCaracter tipCaracter;
+	float* listaArme;
+	int nrArme;
+	int nivelViata;
+public:
+	//DEFAULT
+	Caracter() {
+		this->denumire = "DEFAULT";
+		this->tipCaracter = MAG;
+		this->listaArme = nullptr;
+		this->nrArme = 0;
+		this->nivelViata = 0;
+	}
+	//doar denumire
+	Caracter(string de) {
+		this->denumire = de;
+		this->tipCaracter = MAG;
+		this->listaArme = nullptr;
+		this->nrArme = 0;
+		this->nivelViata = 0;
+	}
+	//CU TOTI PARAMETRII
+	Caracter(string d,TipCaracter t,float* l,int n,int ni) {
+		this->denumire = d;
+		this->tipCaracter = t;
+		if (l != nullptr && n > 0) {
+			this->listaArme = new float[n];
+			for (int i = 0; i < n; i++) {
+				this->listaArme[i] = l[i];
+			}
+		}
+		else
+		{
+			this->listaArme = nullptr;
+			this->nrArme = 0;
+		}
+		this->nivelViata = ni;
+
+	}
+	//copiere
+	Caracter(const Caracter& c) {
+		denumire = c.denumire;
+		tipCaracter = c.tipCaracter;
+		nrArme = c.nrArme;
+		nivelViata = c.nivelViata;
+		if (nrArme > 0) {
+			this->listaArme = new float[nrArme];
+			for (int i = 0; i < nrArme; i++)
+				listaArme[i] = c.listaArme[i];
+		}
+		else listaArme = nullptr;
+	}
+	//++
+	Caracter& operator++() {
+		if (nivelViata < 100) nivelViata++;
+		return *this;
+	}
+
+	//DESTRUCTOR
+	~Caracter() {
+		if (this->listaArme != nullptr) {
+			delete[] this->listaArme;
+			this->listaArme = nullptr;
+		}
+	}
+	friend ostream& operator<<(ostream& out,const Caracter& c) {
+		out << "\nDenumire este: " << c.denumire;
+		out << "\nTipul este: " << c.tipCaracter;
+		out << "\nNivelul de viata este: " << c.nivelViata;
+		out << "\nNr de arme este: " << c.nrArme;
+		out << "\nPuterile armelor sunt: ";
+		for (int i = 0; i < c.nrArme; i++) {
+			out << c.listaArme[i] << " ";
+		}
+		return out;
+
+	}
+	
+
+	
+};
+
+
+
+
+class JocVideo {
+private:
+	vector<Caracter> caractere;
+public:
+	JocVideo() {
+
+	}
+	JocVideo(const vector<Caracter>& lista) {
+		caractere = lista;
+	}
+	//ADAUGARE CARACTER
+	void adaugareCaracter(const Caracter& c) {
+		caractere.push_back(c);
+	}
+	friend ostream& operator<<(ostream& out, const JocVideo& j) {
+		for (const auto& c : j.caractere)  // trebuie const auto&
+			out << c << "\n-----------------\n";
+		return out;
+	}
+};
+
+
+
+
+int main() {
+	Caracter c0;
+	cout << c0;
+	cout << endl;
+	Caracter c1("Razboinicul luminii", ZBURATOR, nullptr, 0, 100);
+	
+	cout << c1;
+	cout << endl;
+	JocVideo joc;
+	joc.adaugareCaracter(c0);
+	joc.adaugareCaracter(c1);
+
+	cout << "\nJoc video:\n" << joc << endl;
+
+}
