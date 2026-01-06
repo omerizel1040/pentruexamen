@@ -1,0 +1,162 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+#include<fstream>
+#include <string>
+#include <cstring>
+#include <map>
+#include <vector>
+using namespace std;
+
+class Petitie {
+private:
+    string dataDepunere;
+    string numeSolicitant;
+    string categorie;
+    bool rezolvata;
+    char* descriere;           // ALOCAT DINAMIC
+
+    static int termenLegal;    // membru static (zile)
+    const int id;              // membru const
+public:
+    //CONSTRUCTOR DEFAULT
+    Petitie() : id(0) {
+        this->dataDepunere = "necunoscut";
+        this->numeSolicitant = "necunoscut";
+        this->categorie = "necunoscut";
+        this->rezolvata = false;
+        this->descriere = new char[strlen("necunoscut") + 1];
+        strcpy(this->descriere, "necunoscut");
+    }
+    Petitie(string data, string nume, string cat, const char* desc, int _id)
+        : id(_id) {
+        dataDepunere = data;
+        numeSolicitant = nume;
+        categorie = cat;
+        rezolvata = false;
+        descriere = new char[strlen(desc) + 1];
+        strcpy(descriere, desc);
+    }
+    // Copy constructor
+    Petitie(const Petitie& p) : id(p.id) {
+        dataDepunere = p.dataDepunere;
+        numeSolicitant = p.numeSolicitant;
+        categorie = p.categorie;
+        rezolvata = p.rezolvata;
+        descriere = new char[strlen(p.descriere) + 1];
+        strcpy(descriere, p.descriere);
+    }
+
+    // Operator =
+    Petitie& operator=(const Petitie& p) {
+        if (this != &p) {
+            dataDepunere = p.dataDepunere;
+            numeSolicitant = p.numeSolicitant;
+            categorie = p.categorie;
+            rezolvata = p.rezolvata;
+
+            delete[] descriere;
+            descriere = new char[strlen(p.descriere) + 1];
+            strcpy(descriere, p.descriere);
+        }
+        return *this;
+    }
+
+    // Destructor virtual
+    virtual ~Petitie() {
+        delete[] descriere;
+    }
+    //!
+    bool operator!() const {
+        return rezolvata == false;
+    }
+    //~ schimbare stare petitie
+    void operator~() {
+        rezolvata = !rezolvata;
+    }
+    string getCategorie() const {
+        return categorie;
+    }
+
+    // Metoda virtuala (pentru virtualizare)
+    virtual void tipPetitie() const {
+        cout << "Petitie standard\n";
+    }
+
+    // Operator << (afisare)
+    friend ostream& operator<<(ostream& out, const Petitie& p) {
+        out << "ID: " << p.id
+            << ", Data: " << p.dataDepunere
+            << ", Solicitant: " << p.numeSolicitant
+            << ", Categorie: " << p.categorie
+            << ", Rezolvata: " << (p.rezolvata ? "DA" : "NU")
+            << ", Descriere: " << p.descriere;
+        return out;
+    }
+    friend ofstream& operator<<(ofstream& fout, const Petitie& p) {
+        fout << p.id << endl
+            << p.dataDepunere << endl
+            << p.numeSolicitant << endl
+            << p.categorie << endl
+            << p.rezolvata << endl
+            << p.descriere << endl;
+        return fout;
+    }
+
+
+};
+int Petitie::termenLegal = 30;
+
+//specializati
+
+class PetitieOnline :public Petitie {
+private:
+    string platforma;
+public:
+    PetitieOnline(string data, string nume, string cat,
+        const char* desc, int id, string plat) :Petitie(data, nume, cat, desc, id) {
+        this->platforma = plat;
+    }
+    //supraincacare metoda virtuala
+    void tipPetitie() const override {
+        cout << "Petitie ONLINE, platforma: "
+            << platforma << endl;
+    }
+};
+//map<cheie,valoare>
+//vector mai multe petitii din aceeasi categorie
+map<string, vector<Petitie*>> petitiPeCategorii;
+
+int main() {
+    // Creare obiect Petitie
+    Petitie p1("01-03-2024", "Ionescu Ana",
+        "urbanism", "Autorizatie constructie", 1);
+
+    cout << "Afisare petitie:\n";
+    cout << p1 << endl << endl;
+
+    ~p1;
+    cout << "Dupa schimbarea starii:\n";
+    cout << p1 << endl << endl;
+
+    // Test specializare + virtualizare (late binding)
+    PetitieOnline p2("10-04-2024", "Popescu Ion",
+        "mediu", "Copaci taiati ilegal", 2, "Ghiseul.ro");
+
+    Petitie* ptr = &p2;
+    cout << "Virtualizare (late binding):\n";
+    ptr->tipPetitie();
+    cout << endl;
+
+    map<string, vector<Petitie*>> petitiPeCategorii;
+
+    petitiPeCategorii[p1.getCategorie()].push_back(&p1);
+    petitiPeCategorii[p2.getCategorie()].push_back(&p2);
+
+    cout << "Nr. petitii categoria urbanism: "
+        << petitiPeCategorii["urbanism"].size() << endl;
+
+    cout << "Nr. petitii categoria mediu: "
+        << petitiPeCategorii["mediu"].size() << endl;
+
+    return 0;
+}
