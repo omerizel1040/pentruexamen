@@ -1,0 +1,130 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include<map>
+using namespace std;
+#include<vector>
+enum tipFrizerie { salon, clasica, barberShop };
+
+class Frizerie {
+private:
+    vector<Serviciu*> servicii;
+    char* denumire;          // Membru private
+    tipFrizerie tip;
+    int nrFrizeri;
+    static int lungimeMinimaDenumire; // Membru static
+public:
+    //pt a ada si stere servicii
+    void operator+=(Serviciu* s) {
+        servicii.push_back(s);
+    }
+    void operator-=(string denumireServiciu) {
+        for (auto it = servicii.begin(); it != servicii.end(); ++it) {
+            if ((*it)->getDenumire() == denumireServiciu) {
+                servicii.erase(it);
+                break;
+            }
+        }
+    }
+    //metoda pentru pret total
+    float calculeazaPretTotalServicii() {
+        float total = 0;
+        for (auto s : servicii) {
+            total = total + s->calculeazaPret();
+        }
+    }
+    Frizerie() {
+        this->denumire = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->denumire, "NECUNOSCUT");
+        this->tip = clasica;
+        this->nrFrizeri = 0;
+    }
+    Frizerie(const char* d, tipFrizerie t, int n) {
+        this->denumire = new char[strlen(d) + 1];
+        strcpy(this->denumire, d);
+        this->tip = t;
+        this->nrFrizeri = n;
+    }
+    //copy f3=f2
+    Frizerie(const Frizerie& f) {
+        this->denumire = new char[strlen(f.denumire) + 1];
+        strcpy(this->denumire, f.denumire);
+        this->tip = f.tip;
+        this->nrFrizeri = f.nrFrizeri;
+    }
+    //destr
+    ~Frizerie() {
+        if (this->denumire != nullptr) {
+            delete[] this->denumire;
+            this->denumire = nullptr;
+        }
+    }
+    //
+    static void setLungime(int l) {
+        lungimeMinimaDenumire = l;
+    }
+    void setDenumire(const char* nouaDenumire) {
+        if (strlen(nouaDenumire) >= (size_t)lungimeMinimaDenumire) {
+            delete[] denumire;
+            denumire = new char[strlen(nouaDenumire) + 1];
+            strcpy(denumire, nouaDenumire);
+        }
+    }
+    string getDenumire() const { return denumire ? string(denumire) : ""; }
+    friend ostream& operator<<(ostream& out, Frizerie& f) {
+        out << "\nDenumire este: " << f.denumire;
+        out << "\nTipul este: " << f.tip;
+        out << "\nNr de frizeri este: " << f.nrFrizeri;
+        return out;
+    }
+};
+
+int Frizerie::lungimeMinimaDenumire = 0;
+
+//clasa abstracta
+class Serviciu {
+protected:
+    string denumire;
+public:
+    Serviciu(string den) {
+        this->denumire = den;
+    }
+    virtual float calculeazaPret() = 0;//metoda pura(clasa abstracta)
+    virtual ~Serviciu() {
+
+    }
+    string getDenumire() {
+        return this->denumire;
+    }
+};
+class Tuns :public Serviciu {
+public:
+    Tuns() :Serviciu("Tuns") {
+        
+    }
+    float calculeazaPret() override {
+        return 50;
+    }
+    class Barbierit : public Serviciu {
+    public:
+        Barbierit() : Serviciu("Barbierit") {}
+        float calculeazaPret() override { return 30.0; }
+    };
+};
+
+
+int main() {
+    Frizerie f1;
+    cout << f1;
+    cout << endl;
+    Frizerie f2("La Mihai", tipFrizerie::barberShop, 3);
+    cout << f2;
+    cout << endl;
+    Frizerie f3 = f2;
+    cout << f3;
+    Frizerie::setLungime(5);
+
+    // Validare: "El Saloon" are 9 caractere ( > 5 ), deci va fi acceptat
+    f3.setDenumire("El Saloon");
+    cout << "Denumire f3 dupa set: " << f3.getDenumire() << endl;
+}
