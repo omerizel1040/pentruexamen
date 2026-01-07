@@ -1,0 +1,124 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <cstring>
+using namespace std;
+
+//clasa abstracta
+class EntitateJoc {
+public:
+	virtual void afiseazaStatus() = 0;
+	virtual ~EntitateJoc(){}
+};
+
+class PersonajJoc :public EntitateJoc {
+private:
+	char* nume;              // Alocat dinamic
+	int nrLovituri;
+	int* punctePerLovitura; 
+public:
+	PersonajJoc() {
+		this->nume = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->nume, "NECUNOSCUT");
+		this->nrLovituri = 0;
+		this->punctePerLovitura = nullptr;
+	}
+	// Constructor cu parametri
+	PersonajJoc(const char* _nume, int _nr, int* _puncte) {
+		this->nume = new char[strlen(_nume) + 1];
+		strcpy(this->nume, _nume);
+
+		this->nrLovituri = _nr;
+		this->punctePerLovitura = new int[_nr];
+		for (int i = 0; i < _nr; i++) {
+			this->punctePerLovitura[i] = _puncte[i];
+		}
+	}
+	// Constructor de copiere (PersonajJoc p3(p2))
+	PersonajJoc(const PersonajJoc& p) {
+		this->nume = new char[strlen(p.nume) + 1];
+		strcpy(this->nume, p.nume);
+		this->nrLovituri = p.nrLovituri;
+		this->punctePerLovitura = new int[p.nrLovituri];
+		for (int i = 0; i < p.nrLovituri; i++) {
+			this->punctePerLovitura[i] = p.punctePerLovitura[i];
+		}
+	}
+	void setLovituri(int nr, int* puncte) {
+		delete[] punctePerLovitura;
+		this->nrLovituri = nr;
+		this->punctePerLovitura = new int[nr];
+		for (int i = 0; i < nr; i++) {
+			this->punctePerLovitura[i] = puncte[i];
+		}
+	}
+	//+=
+	PersonajJoc& operator+=(int valoare) {
+		this->nrLovituri += valoare;
+		return *this;
+	}
+	//>=
+	bool operator>=(const PersonajJoc& p) const {
+		return this->nrLovituri >= p.nrLovituri;
+	}
+	~PersonajJoc() {
+		delete[] nume;
+		delete[] punctePerLovitura;
+	}
+	void afiseazaStatus() override {
+		cout << "Personaj: " << (nume ? nume : "Anonim") << " | Lovituri: " << nrLovituri << endl;
+	}
+};
+
+class PersonajErou :public PersonajJoc {
+private:
+	int puncteMana;
+
+public:
+	// Constructorul cu parametri apeleaza explicit constructorul bazei
+	PersonajErou(const char* n, int nr, int* p, int mana) : PersonajJoc(n, nr, p), puncteMana(mana) {}
+
+	void afiseazaStatus() override {
+		PersonajJoc::afiseazaStatus();
+		cout << " -> Erou cu Mana: " << puncteMana << endl;
+	}
+};
+
+template <typename T>
+T gasesteMaxim(T a, T b) {
+	return (a > b) ? a : b;
+}
+int main() {
+	// Testare apeluri cerute
+	PersonajJoc p1;
+
+	int puncte[] = { 10, 20, 30 };
+	PersonajJoc p2("Batman", 3, puncte);
+
+	PersonajJoc p3(p2); // Constructor copiere
+
+	int puncteNoi[] = { 5, 5 };
+	p2.setLovituri(2, puncteNoi);
+
+	// Testare operatori
+	p2 += 5; // nrLovituri devine 2 + 5 = 7
+	if (p2 >= p3) {
+		cout << "Batman (p2) are mai multe lovituri decat copia sa (p3)." << endl;
+	}
+
+	// Testare relatie "is-a"
+	int puncteErou[] = { 100 };
+	PersonajErou e1("Superman", 1, puncteErou, 500);
+	e1.afiseazaStatus();
+
+	// Testare clasa abstracta (polimorfism)
+	EntitateJoc* entitate = &e1;
+	entitate->afiseazaStatus();
+
+	// Testare Template
+	cout << "Maximul dintre 10 si 20: " << gasesteMaxim(10, 20) << endl;
+
+	return 0;
+}
