@@ -1,0 +1,181 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include <vector>
+#include <list>
+#include <cstring>
+
+using namespace std;
+
+// Enumerare pentru tipuri de carne
+enum TipCarne { PORC, VITA, PASARE, PESTE };
+
+class Produs {
+private:
+	char* denumire;
+    TipCarne tip;
+    int zilePanaLaExpirare;
+    float pret;
+    static float TVA;
+public:
+    //defaut
+    Produs() {
+        this->denumire = new char[strlen("NECUNOSCUT") + 1];
+        strcpy(this->denumire, "NECUNOSCUT");
+        this->tip = PORC;
+        this->zilePanaLaExpirare = 0;
+        this->pret = 0;
+
+    }
+    //cu toti parametrii
+    Produs(const char* d,TipCarne t,int z,float p) {
+        this->denumire = new char[strlen(d) + 1];
+        strcpy(this->denumire, d);
+        this->tip = t;
+        this->zilePanaLaExpirare = z;
+        this->pret = p;
+    }
+    //copiere
+    Produs(const Produs& p) {
+        this->denumire = new char[strlen(p.denumire) + 1];
+        strcpy(this->denumire, p.denumire);
+        this->tip = p.tip;
+        this->zilePanaLaExpirare = p.zilePanaLaExpirare;
+        this->pret = p.pret;
+    }
+    //operatorul =
+    void operator=(const Produs& p) {
+        if (this != &p) {
+            if (this->denumire != nullptr) {
+                delete[]  this->denumire;
+                this->denumire = nullptr;
+            }
+            
+                this->denumire = new char[strlen(p.denumire) + 1];
+                strcpy(this->denumire, p.denumire);
+            
+            this->tip = p.tip;
+            this->zilePanaLaExpirare = p.zilePanaLaExpirare;
+            this->pret = p.pret;
+        }
+    }
+    //*= pentru reducere
+    void operator*=(float coeficient) {
+        if (this->zilePanaLaExpirare == 1) {
+            this->pret *= coeficient;
+        }
+    }
+    //==pentru comparare totala
+    bool operator==(const Produs& p) const {
+        return(
+            strcmp(this->denumire, p.denumire) == 0
+            &&
+            this->tip == p.tip &&
+            this->pret == p.pret
+            
+            );
+    }
+    string getDenumire() const { return denumire ? string(denumire) : ""; }
+    TipCarne getTip() const { return tip; }
+    //destructor
+    ~Produs() {
+        if (this->denumire != nullptr) {
+            delete[]  this->denumire;
+            this->denumire = nullptr;
+        }
+
+    }
+    //afisare
+    friend ostream& operator<<(ostream& out,const  Produs& p) {
+        out << "\nDenumirea produsului este: " << p.denumire;
+        out << "\nTipul carnii este: " << p.tip;
+        out << "\nZile pana expira: " << p.zilePanaLaExpirare;
+        out << "\nPretul este: " << p.pret;
+        return out;
+    }
+};
+float Produs::TVA = 0.09f;
+
+class GestiuneStoc {
+private:
+    vector<Produs> stoc;
+public:
+    //adaugare produse noi
+    void operator+=(const Produs& p) {
+        bool exista = false;
+        for (auto& item : stoc) {
+            if (item == p) {
+                exista = true;
+                break;
+            }
+        }
+        if (!exista) stoc.push_back(p);
+    }
+    //op functie pt curatare stoc elima tot
+    void operator()() {
+        stoc.clear();
+        cout << "\nStocul a fost golit";
+    }
+    vector<Produs> getProduse() { return stoc; }
+    friend ostream& operator<<(ostream& out, const GestiuneStoc& g) {
+        if (g.stoc.empty()) {
+            out << "\nStocul este gol";
+        }
+        else
+        {
+            for (const auto& p : g.stoc) {
+                out << p << endl;
+            }
+        }
+        return out;
+    }
+};
+
+int main() {
+    Produs p0;
+    cout << p0;
+    cout << endl;
+    Produs p1("Ceafa Porc", PORC, 1, 25.0);
+    Produs p2("Somon", PESTE, 5, 60.0);
+    Produs p3("Pastrav", PESTE, 3, 35.0);
+    //cout << p1;
+    //cout << endl;
+    ////pentru copiere
+    ////Produs p4(p3);
+    ////cout << p4;
+    ////cout << endl;
+    //////=
+    ////p3 = p2;
+    ////cout << p3;
+    //p1 *= 0.5;//reducere pret 50%
+    //cout << "Dupa reducere:" << endl << p1 << endl;
+    //if (p1 == p2) {
+    //    cout << "p1 si p2 sunt identice!" << endl;
+    //}
+    //else {
+    //    cout << "p1 si p2 sunt diferite!" << endl;
+    //}
+    //festiune stoc
+    cout << "\nIN MAGAZIN EXISTA: " << endl;
+    GestiuneStoc magazin;
+    magazin += p1;
+    magazin += p2;
+    cout << magazin;
+    cout << endl;
+    magazin();
+    cout << "\n DUPA OP FUN: " << endl;
+    cout << magazin;
+
+    //STL
+    cout << "\nCautare PESTE in STL" << endl;
+    list<Produs> listaPeste;
+    for (auto p : magazin.getProduse()) {
+        if (p.getTip() == PESTE) {
+            listaPeste.push_back(p);
+        }
+    }
+    for (const auto& peste : listaPeste) {
+        cout << "\nAM gasit peste: " << peste.getDenumire() << endl;
+    }
+    return 0;
+}
