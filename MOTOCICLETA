@@ -1,0 +1,186 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <cstring>
+
+using namespace std;
+
+
+class Motocicleta {
+protected:
+	char* producator;
+	int nrDrumuri;
+	int* distanteParcurse;
+public:
+	static int tipPermis;
+
+	//default
+	Motocicleta() {
+		this->producator = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->producator, "NECUNOSCUT");
+		this->nrDrumuri = 0;
+		this->distanteParcurse = nullptr;
+	}
+	//cu toti parametrii
+	Motocicleta(const char* p, int n, int* di) {
+		this->producator = new char[strlen(p) + 1];
+		strcpy(this->producator, p);
+		this->nrDrumuri = n;
+		this->distanteParcurse = new int[n];
+		for (int i = 0; i < n; i++) {
+			this->distanteParcurse[i] = di[i];
+		}
+	}
+	//const de copiere
+	Motocicleta(const Motocicleta& m) {
+		if (m.producator) {
+			this->producator = new char[strlen(m.producator) + 1];
+			strcpy(this->producator, m.producator);
+		}
+		else this->producator = nullptr;
+
+		this->nrDrumuri = m.nrDrumuri;
+		if (m.distanteParcurse) {
+			this->distanteParcurse = new int[m.nrDrumuri];
+			for (int i = 0; i < m.nrDrumuri; i++) {
+				this->distanteParcurse[i] = m.distanteParcurse[i];
+			}
+		}
+		else this->distanteParcurse = nullptr;
+	}
+	//operatorul =
+	void operator=(Motocicleta& m) {
+		if (this->producator != nullptr) {
+			delete[] this->producator;
+			this->producator = nullptr;
+		}
+		this->producator = new char[strlen(m.producator) + 1];
+		strcpy(this->producator, m.producator);
+		if (this->distanteParcurse != nullptr) {
+			delete[] this->distanteParcurse;
+			this->distanteParcurse = nullptr;
+		}
+		if (m.distanteParcurse != nullptr && m.nrDrumuri > 0) {
+			this->distanteParcurse = new int[m.nrDrumuri];
+			for (int i = 0; i < m.nrDrumuri; i++) {
+				this->distanteParcurse[i] = m.distanteParcurse[i];
+			}
+		}
+		else {
+			this->distanteParcurse = nullptr;
+		}
+		this->nrDrumuri = m.nrDrumuri;
+
+
+	}
+	//Seters si Getters
+	void setProducator(const char* prod) {
+		if (prod != nullptr) {
+			delete[] this->producator;
+
+		}
+		this->producator = new char[strlen(prod) + 1];
+		strcpy(this->producator, prod);
+	}
+
+	string getProducator() const { return producator ? string(producator) : ""; }
+	//destructor
+	~Motocicleta() {
+		if (this->producator != nullptr) {
+			delete[] this->producator;
+			this->producator = nullptr;
+		}
+		if (this->distanteParcurse != nullptr) {
+			delete[] this->distanteParcurse;
+			this->distanteParcurse = nullptr;
+		}
+	}
+	friend ostream& operator<<(ostream& out, const Motocicleta& m) {
+		out << "\nProducatorul este: " << m.producator;
+		out << "\nNr de drumuri este: " << m.nrDrumuri;
+		out << "\nDistantele parcurse sunt: ";
+		if (m.nrDrumuri > 0 && m.distanteParcurse != nullptr) {
+			for (int i = 0; i < m.nrDrumuri; i++) {
+				out << m.distanteParcurse[i] << " ";
+			}
+		}
+		else
+		{
+			out << "NU EXISTA";
+		}
+		return out;
+	}
+};
+int Motocicleta::tipPermis = 'A';
+class MotocicletaElectrica : public Motocicleta {
+private:
+	float capacitateBaterie;
+	char* tipIncarcator;
+public:
+	MotocicletaElectrica() :Motocicleta() {
+		this->capacitateBaterie = 0;
+		this->tipIncarcator = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->tipIncarcator, "NECUNOSCUT");
+
+	}
+	MotocicletaElectrica(const char* prod, int nr, int* dist, float cap, const char* incarcator) :Motocicleta(prod, nr, dist) {
+		this->tipIncarcator = new char[strlen(incarcator) + 1];
+		strcpy(this->tipIncarcator, incarcator);
+		this->capacitateBaterie = cap;
+	}
+	MotocicletaElectrica(const MotocicletaElectrica& me) : Motocicleta(me) {
+		this->capacitateBaterie = me.capacitateBaterie;
+		if (me.tipIncarcator) {
+			this->tipIncarcator = new char[strlen(me.tipIncarcator) + 1];
+			strcpy(this->tipIncarcator, me.tipIncarcator);
+		}
+		else {
+			this->tipIncarcator = nullptr;
+		}
+	}
+	~MotocicletaElectrica() {
+		delete[] tipIncarcator;
+	}
+	friend ostream& operator<<(ostream& out, const MotocicletaElectrica& me) {
+		out << (const Motocicleta&)me;
+		out << "\nCapacitatea este: " << me.capacitateBaterie;
+		out << "\nTipul de incarcator este: " << me.tipIncarcator;
+		return out;
+	}
+
+};
+
+int main() {
+	Motocicleta m0;
+	cout << m0;
+	cout << endl;
+	int valori1[] = { 45,100,80 };
+	int valori2[] = { 66,87,150,40};
+	Motocicleta m1("Honda", 3, valori1);
+	cout << m1;
+	cout << endl;
+	Motocicleta m2("Seat", 4, valori2);
+	cout << m2;
+	/*Motocicleta m3(m2);
+	cout << endl;
+	cout << m3;*/
+	/*cout << endl;
+	m2 = m1;
+	cout << m2;*/
+	cout << endl;
+	//speciali
+	MotocicletaElectrica e1("Tesla-Moto", 1, valori1, 75.5, "Type2");
+	cout << e1;
+	cout << endl;
+	
+	//DUPA MODEL
+	map<string, Motocicleta> catalog;
+	catalog[m1.getProducator()] = m1;
+	catalog[m2.getProducator()] = m2;
+	string cautare = "Seat";
+	if (catalog.find(cautare) != catalog.end()) {
+		cout << "\nMotocicleta gasita in catalog: " << catalog[cautare].getProducator() << endl;
+	}
+}
