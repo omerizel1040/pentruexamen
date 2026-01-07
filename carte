@@ -1,0 +1,184 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <string>
+#include <map>
+#include <cstring>
+
+using namespace std;
+
+class ItemBiblioteca {
+public:
+	virtual void afiseazaTip() = 0;
+	virtual ~ItemBiblioteca(){}
+};
+
+class Carte:public ItemBiblioteca {
+private:
+	char* titlu;
+	string autor;
+	int nrPagini;
+	float* preturiCapitole;
+	int nrCapitole;
+public:
+	Carte() {
+		this->titlu = new char[strlen("NECUNOSCUT") + 1];
+		strcpy(this->titlu, "NECUNOSCUT");
+		this->autor = "NECUNOSCUT";
+		this->nrPagini = 0;
+		this->preturiCapitole = nullptr;
+		this->nrCapitole = 0;
+	}
+	Carte(const char* t, string a, int n, int nr,float* p) {
+
+		this->titlu = new char[strlen(t) + 1];
+		strcpy(this->titlu, t);
+		this->autor = a;
+		this->nrPagini = n;
+		this->nrCapitole = nr;
+		this->preturiCapitole = new float[nr];
+		for (int i = 0; i < nr; i++) {
+			this->preturiCapitole[i] = p[i];
+		}
+
+	}
+	//copeiere
+	Carte(const Carte& c) {
+		this->titlu = new char[strlen(c.titlu) + 1];
+		strcpy(this->titlu, c.titlu);
+		this->autor = c.autor;
+		this->nrPagini = c.nrPagini;
+		this->nrCapitole = c.nrCapitole;
+		this->preturiCapitole = new float[c.nrCapitole];
+		for (int i = 0; i < c.nrCapitole; i++) {
+			this->preturiCapitole[i] = c.preturiCapitole[i];
+		}
+	}
+	void operator=(const Carte& c) {
+		if (this != &c) {
+			if (this->titlu != nullptr) {
+				delete[] this->titlu;
+				this->titlu = nullptr;
+			}
+			if (this->preturiCapitole != nullptr) {
+				delete[] this->preturiCapitole;
+				this->preturiCapitole = nullptr;
+			}
+			this->titlu = new char[strlen(c.titlu) + 1];
+			strcpy(this->titlu, c.titlu);
+			this->autor = c.autor;
+			this->nrPagini = c.nrPagini;
+			this->nrCapitole = c.nrCapitole;
+			this->preturiCapitole = new float[c.nrCapitole];
+			for (int i = 0; i < c.nrCapitole; i++) this->preturiCapitole[i] = c.preturiCapitole[i];
+		}
+	}
+	float& operator[](int index) {
+		if (index >= 0 && index < nrCapitole) {
+			return this->preturiCapitole[index];
+		}
+		throw out_of_range("INDEX INVALID");
+	}
+	//DESTRUCTOR
+	~Carte() {
+		if (this->titlu != nullptr) {
+			delete[] this->titlu;
+			this->titlu = nullptr;
+		}
+		if (this->preturiCapitole != nullptr) {
+			delete[] this->preturiCapitole;
+			this->preturiCapitole = nullptr;
+		}
+	}
+	operator int() const {
+		return nrPagini;
+	}
+	int getNrPagini() const { return nrPagini; }
+	void afiseazaTip() override {
+		cout << "Tip: Carte digitala";
+	}
+	friend ostream& operator<<(ostream& out, const Carte& c) {
+		out << "\nTitlul este: " << c.titlu;
+		out << "\nAutorul este: " << c.autor;
+		out << "\nNr de pagini este: " << c.nrPagini;
+		out << "\nNr de capitole este: " << c.nrCapitole;
+		
+		out << "\nPreturile sunt:";
+		for (int i = 0; i <c.nrCapitole; i++) {
+			out << c.preturiCapitole[i] << " ";
+		}
+		return out;
+	}
+};
+//compara orice numere
+template <typename T>
+bool esteMaiMare(T a, T b) {
+	return a > b;
+}
+class Biblioteca {
+private:
+	map<string, Carte> colectie;
+public:
+	void adaugaCarte(string isbn, Carte c) {
+		colectie[isbn] = c;
+	}
+	void afiseazaTot() {
+		for (auto it = colectie.begin(); it != colectie.end(); ++it) {
+			cout << "ISBN: " << it->first << it->second << endl;
+		}
+	}
+};
+int main() {
+	
+
+		// ===== TEST CONSTRUCTORI =====
+		cout << "\n--- Constructor fara parametri ---";
+		Carte c0;
+		cout << c0 << endl;
+
+		float preturi1[] = { 10.5, 15.0, 12.0 };
+		Carte c1("Poezii", "Eminescu", 200, 3, preturi1);
+
+		cout << "\n--- Constructor cu parametri ---";
+		cout << c1 << endl;
+
+		// ===== TEST CONSTRUCTOR COPIERE =====
+		cout << "\n--- Constructor de copiere ---";
+		Carte c2 = c1;   // copy constructor
+		cout << c2 << endl;
+
+		// ===== TEST OPERATOR = =====
+		float preturi2[] = { 8, 16, 26, 30 };
+		Carte c3("Harry Potter", "J.K. Rowling", 560, 4, preturi2);
+
+		cout << "\n--- Operator = ---";
+		c2 = c3;         // operator=
+		cout << c2 << endl;
+
+		// ===== TEST OPERATOR [] =====
+		cout << "\n--- Operator [] ---";
+		cout << "Pret capitol 1: " << c2[1] << endl;
+		c2[1] = 99.9;
+		cout << "Pret capitol 1 modificat: " << c2[1] << endl;
+
+		// ===== TEST OPERATOR CAST int =====
+		cout << "\n--- Conversie la int ---";
+		int pagini = (int)c2;
+		cout << "Nr pagini: " << pagini << endl;
+
+		// ===== TEST POLIMORFISM =====
+		cout << "\n--- Polimorfism ---";
+		ItemBiblioteca* item = &c2;
+		item->afiseazaTip();
+		cout << endl;
+
+		// ===== TEST MAP + BIBLIOTECA =====
+		cout << "\n--- Biblioteca (map) ---";
+		Biblioteca b;
+		b.adaugaCarte("ISBN-001", c1);
+		b.adaugaCarte("ISBN-002", c3);
+
+		b.afiseazaTot();
+
+		return 0;
+	}
+
